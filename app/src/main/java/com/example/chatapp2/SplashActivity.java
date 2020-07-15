@@ -70,6 +70,7 @@ public class SplashActivity extends AppCompatActivity {
             builder.create().show();
         } else { // LoginActivity 로 화면 전환 위함
             startActivity(new Intent(this, LoginActivity.class));
+            finish(); // 밑에 남아있지 않게
         }
 
     }
