@@ -5,9 +5,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -25,6 +27,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         linearLayout = (LinearLayout)findViewById(R.id.SplashActivity_LinearLayout);
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
@@ -65,6 +68,8 @@ public class SplashActivity extends AppCompatActivity {
             });
 
             builder.create().show();
+        } else { // LoginActivity 로 화면 전환 위함
+            startActivity(new Intent(this, LoginActivity.class));
         }
 
     }
