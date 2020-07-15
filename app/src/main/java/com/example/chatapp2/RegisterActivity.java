@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.chatapp2.model.UserModel;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -69,7 +70,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (email.getText().toString() == null || name.getText().toString() == null || password.getText().toString() == null){
+                if (email.getText().toString() == null || name.getText().toString() == null || password.getText().toString() == null || imageUri == null){
                     return; // null 이면 진행 못하도록
                 }
 
@@ -90,7 +91,12 @@ public class RegisterActivity extends AppCompatActivity {
                                         userModel.userName = name.getText().toString();
                                         userModel.profileImageUrl = imageUrl.getResult().toString();
 
-                                        FirebaseDatabase.getInstance().getReference().child("users").child(uid).setValue(userModel); // uid 는 주민번호 같은 역할로 암호화된 것
+                                        FirebaseDatabase.getInstance().getReference().child("users").child(uid).setValue(userModel).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                RegisterActivity.this.finish(); // 회원가입 데이터 들어가면 창이 닫히도록
+                                            }
+                                        }); // uid 는 주민번호 같은 역할로 암호화된 것
                                         // child users 는 이 하위 데이터로 만들겠다.
 
                                     } // OnCompleteListener 정상적으로 완료됐는지 파악 위함

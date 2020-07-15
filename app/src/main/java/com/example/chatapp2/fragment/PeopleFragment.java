@@ -1,5 +1,7 @@
 package com.example.chatapp2.fragment;
 
+import android.app.ActivityOptions;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.chatapp2.Chat.MessageActivity;
 import com.example.chatapp2.R;
 import com.example.chatapp2.model.UserModel;
 import com.google.firebase.database.DataSnapshot;
@@ -78,6 +81,17 @@ public class PeopleFragment extends Fragment {
                     .into(((CustomViewHolder)holder).imageView);
 
             ((CustomViewHolder)holder).textView.setText(userModels.get(position).userName);
+
+            // 유저 리스트 클릭 시 이벤트 작동 코드
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getView().getContext(), MessageActivity.class);
+                    // 애니메이션 효과 삽입
+                    ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(v.getContext(), R.anim.fromright, R.anim.toleft);
+                    startActivity(intent, activityOptions.toBundle());
+                }
+            });
 
         }
 
