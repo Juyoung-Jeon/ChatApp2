@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
-    android:orientation="vertical">
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/messageItem_llDestination"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+        
+        <ImageView
+            android:id="@+id/messageItem_ivProfile"
+            android:layout_width="50dp"
+            android:layout_height="50dp"/>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/messageItem_tvName"
+            android:text="이름"/>
+
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
