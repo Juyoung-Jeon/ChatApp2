@@ -217,4 +217,12 @@ public class MessageActivity extends AppCompatActivity {
             }
         }
     }
+
+    // 뒤로가기 눌렀을 때도 애니메이션 작동하도록
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+        finish();
+        overridePendingTransition(R.anim.fromleft,R.anim.toright);
+    }
 }

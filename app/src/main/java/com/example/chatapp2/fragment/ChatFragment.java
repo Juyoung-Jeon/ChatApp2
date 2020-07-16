@@ -1,5 +1,7 @@
 package com.example.chatapp2.fragment;
 
+import android.app.ActivityOptions;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.chatapp2.Chat.MessageActivity;
 import com.example.chatapp2.R;
 import com.example.chatapp2.model.ChatModel;
 import com.example.chatapp2.model.UserModel;
@@ -50,6 +53,7 @@ public class ChatFragment extends Fragment {
         // 채팅 목록 가져오기
         private List<ChatModel> chatModels = new ArrayList<>();
         private String uid;
+        private ArrayList<String> destinationUsers = new ArrayList<>();
         public ChatRecyclerViewAdapter() {
             uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -82,7 +86,7 @@ public class ChatFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int position) {
 
             final CustomViewHolder customViewHolder = (CustomViewHolder)holder;
             String destinationUid = null;
@@ -91,6 +95,7 @@ public class ChatFragment extends Fragment {
             for(String user: chatModels.get(position).users.keySet()){
                 if(!user.equals(uid)){
                     destinationUid = user;
+                    destinationUsers.add(destinationUid);
                 }
             }
             FirebaseDatabase.getInstance().getReference().child("users").child(destinationUid).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -116,6 +121,19 @@ public class ChatFragment extends Fragment {
             commentMap.putAll(chatModels.get(position).comments);
             String lastMessageKey = (String) commentMap.keySet().toArray()[0];
             customViewHolder.tvLastMessage.setText(chatModels.get(position).comments.get(lastMessageKey).message);
+
+            // 채팅방 리스트에서 채팅방 클릭 시 채팅 화면으로 전환
+            customViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    Intent intent = new Intent(getView().getContext(), MessageActivity.class);
+                    intent.putExtra("destinationUid", destinationUsers.get(position)); // 누구랑 대화할지 부름
+
+                    ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(getView().getContext(), R.anim.fromright,R.anim.toleft); // 화면전환 시 애니메이션 효과 추가
+                    startActivity(intent, activityOptions.toBundle());
+                }
+            });
 
         }
 
