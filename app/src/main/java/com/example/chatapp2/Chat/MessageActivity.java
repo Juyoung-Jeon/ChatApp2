@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +21,9 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.chatapp2.R;
 import com.example.chatapp2.model.ChatModel;
 import com.example.chatapp2.model.UserModel;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,6 +56,8 @@ public class MessageActivity extends AppCompatActivity {
         editText = findViewById(R.id.messageActivity_editText);
 
         recyclerView = (RecyclerView)findViewById(R.id.messageActivity_recyclerView);
+
+        // 메시지 보내는 부분
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,40 +79,46 @@ public class MessageActivity extends AppCompatActivity {
                     ChatModel.Comment comment = new ChatModel.Comment();
                     comment.uid = uid;
                     comment.message = editText.getText().toString();
-                    FirebaseDatabase.getInstance().getReference().child("chatRooms").child(chatRoomUid).child("comments").push().setValue(comment);
+                        FirebaseDatabase.getInstance().getReference().child("chatRooms").child(chatRoomUid).child("comments").push().setValue(comment).addOnCompleteListener(new OnCompleteListener<Void>() {
+                           // 메시지 보낸 후 입력창 초기화 by CompleteListener
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                editText.setText("");
+                            }
+                        });
+                    }
                 }
-            }
-        });
-        checkChatRoom();
+            });
+            checkChatRoom();
 
-    }
+        }
 
-    void checkChatRoom(){
-        FirebaseDatabase.getInstance().getReference().child("chatRooms").orderByChild("users/"+uid).equalTo(true).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot item : dataSnapshot.getChildren()){
-                    ChatModel chatModel = item.getValue(ChatModel.class); // chatRoom 하위의 user 불러와 검토
-                        if(chatModel.users.containsKey(destinationUid)){
-                            chatRoomUid = item.getKey(); // 방 아이디 chatRoom 바로 하위
-                            button.setEnabled(true); // 방 id 받아온 다음에 비활성화시킨 버튼 다시 활성화
-                            recyclerView.setLayoutManager(new LinearLayoutManager(MessageActivity.this));
-                            recyclerView.setAdapter(new RecyclerViewAdapter());
-                        }
+        void checkChatRoom(){
+            FirebaseDatabase.getInstance().getReference().child("chatRooms").orderByChild("users/"+uid).equalTo(true).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for(DataSnapshot item : dataSnapshot.getChildren()){
+                        ChatModel chatModel = item.getValue(ChatModel.class); // chatRoom 하위의 user 불러와 검토
+                            if(chatModel.users.containsKey(destinationUid)){
+                                chatRoomUid = item.getKey(); // 방 아이디 chatRoom 바로 하위
+                                button.setEnabled(true); // 방 id 받아온 다음에 비활성화시킨 버튼 다시 활성화
+                                recyclerView.setLayoutManager(new LinearLayoutManager(MessageActivity.this));
+                                recyclerView.setAdapter(new RecyclerViewAdapter());
+                            }
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        }); // 채팅방 중복 체크 방지, users 의 uid 값 활용해서
-    }
-    // 리사이클러뷰 어댑터 정의
-    class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+                }
+            }); // 채팅방 중복 체크 방지, users 의 uid 값 활용해서
+        }
+        // 리사이클러뷰 어댑터 정의
+        class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
-        List<ChatModel.Comment> comments;
-        UserModel userModel;
+            List<ChatModel.Comment> comments;
+            UserModel userModel;
         public RecyclerViewAdapter() {
             comments = new ArrayList<>();
 
@@ -135,7 +146,9 @@ public class MessageActivity extends AppCompatActivity {
                     for(DataSnapshot item : dataSnapshot.getChildren()){
                         comments.add(item.getValue(ChatModel.Comment.class));
                     }
+                    // 메시지 갱신
                     notifyDataSetChanged(); // 데이터 갱신 역할
+                    recyclerView.scrollToPosition(comments.size() - 1); // 갱신 후 스크롤이 맨 마지막 챗으로 이동
                 }
 
                 @Override
@@ -156,11 +169,14 @@ public class MessageActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             MessageViewHolder messageViewHolder = ((MessageViewHolder)holder);
 
+            // 내가 보낸 메시지
             if(comments.get(position).uid.equals(uid)){ // 전자는 comments 내의 uid, 후자는 내 uid
                 messageViewHolder.tvMessage.setText(comments.get(position).message);
                 messageViewHolder.tvMessage.setBackgroundResource(R.drawable.rightbubble);
                 messageViewHolder.llDestination.setVisibility(View.INVISIBLE); // 내 메시지뷰는 상대방에게 감추기 위함
+                messageViewHolder.llMain.setGravity(Gravity.RIGHT); // 내 메시지 우측 정렬
 
+            // 상대방이 보낸 메시지
             }else {
 
                 Glide.with(holder.itemView.getContext())
@@ -171,7 +187,7 @@ public class MessageActivity extends AppCompatActivity {
                 messageViewHolder.llDestination.setVisibility(View.VISIBLE);
                 messageViewHolder.tvMessage.setBackgroundResource(R.drawable.leftbubble); // 말풍선
                 messageViewHolder.tvMessage.setText(comments.get(position).message);
-
+                messageViewHolder.llMain.setGravity(Gravity.LEFT); // 상대 메시지 좌측 정렬
             }
             messageViewHolder.tvMessage.setTextSize(25);
 
@@ -187,6 +203,7 @@ public class MessageActivity extends AppCompatActivity {
             public TextView tvName;
             public ImageView ivProfile;
             public LinearLayout llDestination;
+            public LinearLayout llMain;
 
             public MessageViewHolder(View view) {
                 super(view);
@@ -194,6 +211,7 @@ public class MessageActivity extends AppCompatActivity {
                 tvName = (TextView)view.findViewById(R.id.messageItem_tvName);
                 ivProfile = (ImageView)view.findViewById(R.id.messageItem_ivProfile);
                 llDestination = (LinearLayout)view.findViewById(R.id.messageItem_llDestination);
+                llMain = (LinearLayout)view.findViewById(R.id.messageItem_llMain); // 채팅창 정렬에 쓰임
 
 
             }
