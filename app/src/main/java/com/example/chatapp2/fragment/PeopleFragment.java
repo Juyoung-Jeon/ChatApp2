@@ -20,6 +20,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.chatapp2.Chat.MessageActivity;
 import com.example.chatapp2.R;
 import com.example.chatapp2.model.UserModel;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -45,12 +46,20 @@ public class PeopleFragment extends Fragment {
         List<UserModel> userModels;
         public PeopleFragmentRecyclerViewAdapter() {
             userModels = new ArrayList<>();
+            final String myUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // 내 uid 면 리스트에 안 쌓이게 -> 중복 제거 위함
             FirebaseDatabase.getInstance().getReference().child("users").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     userModels.clear(); // 친구 목록 쌓일 때 중복되는 것 제거
+
+
                     // 서버에서 넘어온 친구 목록이 담기는 곳
                     for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+
+                        UserModel userModel = snapshot.getValue(UserModel.class);
+                        if(userModel.uid.equals(myUid)){
+                            continue;
+                        }
                         userModels.add(snapshot.getValue(UserModel.class));
                     }
                     notifyDataSetChanged(); // 데이터 쌓이고 새로고침 해서 불러올 수 있게 해주는 것!

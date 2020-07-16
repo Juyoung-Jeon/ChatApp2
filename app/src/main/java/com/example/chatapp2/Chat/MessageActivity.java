@@ -2,19 +2,28 @@ package com.example.chatapp2.Chat;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.chatapp2.R;
 import com.example.chatapp2.model.ChatModel;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MessageActivity extends AppCompatActivity {
 
@@ -24,6 +33,8 @@ public class MessageActivity extends AppCompatActivity {
 
     private String uid;
     private String chatRoomUid;
+
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +47,7 @@ public class MessageActivity extends AppCompatActivity {
         button = (Button)findViewById(R.id.messageActivity_button);
         editText = findViewById(R.id.messageActivity_editText);
 
+        recyclerView = (RecyclerView)findViewById(R.id.messageActivity_recyclerView);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -45,7 +57,14 @@ public class MessageActivity extends AppCompatActivity {
                 chatModel.users.put(destinationUid, true);
 
                 if(chatRoomUid == null){ // null 이면 바로 생성
-                    FirebaseDatabase.getInstance().getReference().child("chatRooms").push().setValue(chatModel); // push 는 primary key 같은 역할, 채팅방의 이름.
+                    button.setEnabled(false); // 값 입력 전까지 잠시 불능으로 만들어 버그 방지
+                    FirebaseDatabase.getInstance().getReference().child("chatRooms").push().setValue(chatModel).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            checkChatRoom(); // 데이터 입력 완료 후에 방을 체크하도록 하여 중복을 방지하기 위한 코드
+                        }
+                    }); // push 는 primary key 같은 역할, 채팅방의 이름.
+
                 } else  {
                     ChatModel.Comment comment = new ChatModel.Comment();
                     comment.uid = uid;
@@ -66,6 +85,9 @@ public class MessageActivity extends AppCompatActivity {
                     ChatModel chatModel = item.getValue(ChatModel.class); // chatRoom 하위의 user 불러와 검토
                         if(chatModel.users.containsKey(destinationUid)){
                             chatRoomUid = item.getKey(); // 방 아이디 chatRoom 바로 하위
+                            button.setEnabled(true); // 방 id 받아온 다음에 비활성화시킨 버튼 다시 활성화
+                            recyclerView.setLayoutManager(new LinearLayoutManager(MessageActivity.this));
+                            recyclerView.setAdapter(new RecyclerViewAdapter());
                         }
                 }
             }
@@ -75,5 +97,54 @@ public class MessageActivity extends AppCompatActivity {
 
             }
         }); // 채팅방 중복 체크 방지, users 의 uid 값 활용해서
+    }
+    // 리사이클러뷰 어댑터 정의
+    class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+
+        List<ChatModel.Comment> comments;
+        public RecyclerViewAdapter() {
+            comments = new ArrayList<>();
+            FirebaseDatabase.getInstance().getReference().child("chatRooms").child(chatRoomUid).child("comments").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    comments.clear(); // 데이터 추가될 때마다 서버에 대화 내옹 다보내주기 때문에 데이터가 계속 쌓임
+
+                    for(DataSnapshot item : dataSnapshot.getChildren()){
+                        comments.add(item.getValue(ChatModel.Comment.class));
+                    }
+                    notifyDataSetChanged(); // 데이터 갱신 역할
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_message,parent,false);
+            return new MessageViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            ((MessageViewHolder)holder).textView_message.setText(comments.get(position).message);
+        }
+
+        @Override
+        public int getItemCount() {
+            return comments.size();
+        }
+
+        private class MessageViewHolder extends RecyclerView.ViewHolder {
+            public TextView textView_message;
+            public MessageViewHolder(View view) {
+                super(view);
+                textView_message = view.findViewById(R.id.messageItem_tvMessage);
+            }
+        }
     }
 }
