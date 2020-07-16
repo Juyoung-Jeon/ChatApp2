@@ -10,10 +10,26 @@
         android:layout_margin="10dp"
         android:id="@+id/chatItem_imageView"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="방 이름"
-        android:id="@+id/chatItem_textView_title"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="방 이름"
+            android:id="@+id/chatItem_tvTitle"/>
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="마지막 메시지"
+            android:id="@+id/chatItem_tvLastMessage"/>
+
+    </LinearLayout>
+
+
 
 </LinearLayout>
