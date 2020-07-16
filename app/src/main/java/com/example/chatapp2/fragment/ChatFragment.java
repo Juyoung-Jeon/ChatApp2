@@ -54,7 +54,7 @@ public class ChatFragment extends Fragment {
             uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
             // 채팅 정보 가져오기 from chatRoom DB
-            FirebaseDatabase.getInstance().getReference().child("chatRooms").orderByChild("users/"+uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("chatRooms").orderByChild("users/"+uid).equalTo(true).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
