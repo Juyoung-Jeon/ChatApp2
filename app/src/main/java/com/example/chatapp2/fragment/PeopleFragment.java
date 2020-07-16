@@ -72,7 +72,7 @@ public class PeopleFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int position) {
             // 이미지 넣어줄 곳
             Glide.with
                     (holder.itemView.getContext())
@@ -87,6 +87,7 @@ public class PeopleFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(getView().getContext(), MessageActivity.class);
+                    intent.putExtra("destinationUid", userModels.get(position).uid); // 회원가입 때 정해진 uid 를 불러와서 채팅방 형성
                     // 애니메이션 효과 삽입
                     ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(v.getContext(), R.anim.fromright, R.anim.toleft);
                     startActivity(intent, activityOptions.toBundle());

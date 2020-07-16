@@ -90,6 +90,7 @@ public class RegisterActivity extends AppCompatActivity {
                                         UserModel userModel = new UserModel();
                                         userModel.userName = name.getText().toString();
                                         userModel.profileImageUrl = imageUrl.getResult().toString();
+                                        userModel.uid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // 회원가입 시 uid 도 지정하기 위함
 
                                         FirebaseDatabase.getInstance().getReference().child("users").child(uid).setValue(userModel).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
