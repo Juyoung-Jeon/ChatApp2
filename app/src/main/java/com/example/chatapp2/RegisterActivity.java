@@ -71,7 +71,7 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (email.getText().toString() == null || name.getText().toString() == null || password.getText().toString() == null || imageUri == null){
-                    return; // null 이면 진행 못하도록
+                    return; // 회원가입 시 기입 안 한 것이 있으면(null 이면) 진행 못하도록
                 }
 
                 FirebaseAuth.getInstance()
@@ -90,12 +90,12 @@ public class RegisterActivity extends AppCompatActivity {
                                         UserModel userModel = new UserModel();
                                         userModel.userName = name.getText().toString();
                                         userModel.profileImageUrl = imageUrl.getResult().toString();
-                                        userModel.uid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // 회원가입 시 uid 도 지정하기 위함
+                                        userModel.uid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // 회원가입 시 uid 도 생성 -> 이를 채팅 매칭에 활용
 
                                         FirebaseDatabase.getInstance().getReference().child("users").child(uid).setValue(userModel).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
-                                                RegisterActivity.this.finish(); // 회원가입 데이터 들어가면 창이 닫히도록
+                                                RegisterActivity.this.finish(); // success 리스너를 달아 회원가입 데이터 들어가면 창이 닫히도록
                                             }
                                         }); // uid 는 주민번호 같은 역할로 암호화된 것
                                         // child users 는 이 하위 데이터로 만들겠다.

@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        BottomNavigationView bottomNavigationView = (BottomNavigationView)findViewById(R.id.mainActivity_bottomNavigationView);
+        BottomNavigationView bottomNavigationView = (BottomNavigationView)findViewById(R.id.mainActivity_bottomNavigationView); // 바텀 네비게이션 바 불러옴
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
                     // bottom navigation 에 달았던 id
 
                     case R.id.action_people:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_frameLayout, new PeopleFragment()).commit();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_frameLayout, new PeopleFragment()).commit(); // PeopleFragment 를 띄우는 코드
                         return true; // 안해주면 시간낭비
 
                     case R.id.action_chat:
